@@ -478,3 +478,19 @@ body, .task-input, .target-input, .intake-textarea, .clay-textarea, .clay-input 
 
 /* Stale tasks — more visible amber glow */
 .task-row.is-stale { border-color: var(--sun-border) !important; background: var(--sun-glass) !important; }
+
+/* ── FORCE TARGET VISIBILITY ── */
+.targets-grid { display: flex !important; flex-direction: column !important; gap: 7px !important; margin-bottom: 12px !important; }
+.target-row { display: flex !important; align-items: center !important; gap: 9px !important; background: var(--glass-3) !important; border: 1.5px solid var(--glass-soft) !important; border-radius: var(--radius-sm) !important; padding: 9px 12px !important; min-height: 42px !important; }
+.target-row.target-t1 { border-color: var(--mint-border) !important; background: var(--mint-glass) !important; }
+.target-tag { font-family: var(--font-display) !important; font-size: 0.66rem !important; font-weight: 700 !important; color: var(--mint-dark) !important; flex-shrink: 0 !important; min-width: 22px !important; display: block !important; }
+.target-input { flex: 1 !important; background: none !important; border: none !important; color: var(--text) !important; font-family: var(--font-body) !important; font-size: 0.86rem !important; font-weight: 500 !important; outline: none !important; min-height: 1.4em !important; line-height: 1.4 !important; display: block !important; width: 100% !important; padding: 0 !important; }
+.target-input::placeholder { color: var(--text-hint) !important; font-weight: 400 !important; }
+
+/* ── AI OUTPUT HIDDEN BY DEFAULT ── */
+.ai-priority-output[hidden] { display: none !important; }
+
+/* ── BLOCK COLS ALWAYS TWO COLUMNS ── */
+.block-cols { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+.lane-label { font-family: var(--font-display) !important; font-size: 0.60rem !important; font-weight: 700 !important; color: var(--text-muted) !important; text-transform: uppercase !important; letter-spacing: 0.07em !important; margin-bottom: 5px !important; }
+.lane-cap { font-size: 0.56rem !important; font-weight: 500 !important; color: var(--text-hint) !important; text-transform: none !important; letter-spacing: 0 !important; }
