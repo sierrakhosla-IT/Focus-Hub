@@ -1020,10 +1020,24 @@ async function runAIPriority() {
     });
 
     if (response.status === 401) {
-      // Bad key — clear it and prompt again
       localStorage.removeItem(AI_KEY_STORAGE);
-      output.innerHTML = '<div class="ai-priority-error">API key invalid — click Prioritize again to re-enter your key.</div>';
+      output.innerHTML = '<div class="ai-priority-error">API key invalid — click Prioritize again to enter a new key.</div>';
       setTimeout(() => { output.hidden = true; }, 5000);
+      btn.textContent = '✦ Prioritize for me';
+      btn.disabled = false;
+      return;
+    }
+    if (response.status === 403) {
+      output.innerHTML = '<div class="ai-priority-error">Access denied (403) — make sure your API key has credits at console.anthropic.com</div>';
+      setTimeout(() => { output.hidden = true; }, 8000);
+      btn.textContent = '✦ Prioritize for me';
+      btn.disabled = false;
+      return;
+    }
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      output.innerHTML = '<div class="ai-priority-error">API error ' + response.status + ': ' + (errData.error?.message || 'Unknown') + '</div>';
+      setTimeout(() => { output.hidden = true; }, 8000);
       btn.textContent = '✦ Prioritize for me';
       btn.disabled = false;
       return;
@@ -1050,8 +1064,15 @@ async function runAIPriority() {
     document.getElementById('btn-ai-close')?.addEventListener('click', () => { output.hidden = true; });
 
   } catch(err) {
-    output.innerHTML = '<div class="ai-priority-error">Could not reach AI. Open your GitHub Pages URL to use this feature.</div>';
-    setTimeout(() => { output.hidden = true; }, 7000);
+    const errMsg = err && err.message ? err.message : 'Unknown error';
+    // Clear stored key if it might be bad
+    const currentKey = getStoredApiKey();
+    if (currentKey) {
+      output.innerHTML = '<div class="ai-priority-error">AI error: ' + errMsg + '<br><small>If this keeps happening, click Prioritize again to re-enter your key.</small></div>';
+    } else {
+      output.innerHTML = '<div class="ai-priority-error">No API key set. Click Prioritize for me to enter your key.</div>';
+    }
+    setTimeout(() => { output.hidden = true; }, 8000);
   } finally {
     btn.textContent = '✦ Prioritize for me';
     btn.disabled = false;
