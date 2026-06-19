@@ -1232,9 +1232,9 @@ function bindEvents() {
   });
   document.getElementById('btn-ai-priority')?.addEventListener('click', runAIPriority);
   document.getElementById('btn-clean').addEventListener('click', cleanSession);
-  document.getElementById('btn-open-tickets').addEventListener('click', openTickets);
-  document.getElementById('btn-close-tickets').addEventListener('click', closeTickets);
-  document.getElementById('drawer-backdrop').addEventListener('click', closeTickets);
+  document.getElementById('btn-open-tickets')?.addEventListener('click', openTickets);
+  document.getElementById('btn-close-tickets')?.addEventListener('click', closeTickets);
+  document.getElementById('drawer-backdrop')?.addEventListener('click', closeTickets);
   document.getElementById('btn-eod-panel').addEventListener('click', prefillEOD);
   document.getElementById('btn-eod-close').addEventListener('click', closeEod);
   document.getElementById('eod-overlay').addEventListener('click', closeEod);
@@ -1251,7 +1251,7 @@ function bindEvents() {
     if ((state.eod.tomorrowFollowUps||[]).length>=CAPS.tomorrowFollowUps) { toast('Max '+CAPS.tomorrowFollowUps); return; }
     state.eod.tomorrowFollowUps.push(makeFollowUp('','','')); renderEod(); save();
   });
-  document.getElementById('btn-add-ticket').addEventListener('click', ()=>{
+  document.getElementById('btn-add-ticket')?.addEventListener('click', ()=>{
     if (state.tickets.length>=CAPS.tickets) { toast('Max '+CAPS.tickets+' tickets'); return; }
     state.tickets.push({id:uid(),number:'',user:'',nextMove:'',url:'',status:'Pending'}); renderAll(); save();
   });
@@ -1397,6 +1397,9 @@ function bindEvents() {
 function init() {
   loadState();
   bindEvents();
+  // Always hide AI output on load
+  const aiOut = document.getElementById('ai-priority-output');
+  if (aiOut) aiOut.hidden = true;
   renderAll();
   if (state.lastDay&&state.lastDay!==todayKey()) toast('New calendar day — use New Day when ready');
 }
