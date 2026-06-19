@@ -95,7 +95,7 @@ function emptyState() {
       { id: uid(), text: '', done: false },
       { id: uid(), text: '', done: false }
     ],
-    start: { targetsLocked: false, noReacting: false, workNotes: '' },
+    start: { targetsLocked: false, workNotes: '' },
     blocks: {
       block1: { donow: [], quickhits: [] },
       block2: { donow: [], quickhits: [] },
@@ -584,9 +584,7 @@ function renderTargets() {
 
 function renderStart() {
   const tl = document.getElementById('chk-targets-locked');
-  const nr = document.getElementById('chk-no-reacting');
   if (tl) tl.checked = !!state.start.targetsLocked;
-  if (nr) nr.checked = !!state.start.noReacting;
   setFieldValueIfIdle(document.getElementById('work-notes'), state.start.workNotes||'');
 }
 
@@ -681,14 +679,15 @@ function renderProgressWave() {
   const fill = document.getElementById('progress-fill');
   if (!fill) return;
   const total = countMeaningfulTasks();
-  fill.style.width = Math.min(100,Math.round((total/CAPS.tasks)*100))+'%';
+  const maxTasks = Math.max(total, 6);
+  fill.style.width = Math.min(100,Math.round((total/maxTasks)*100))+'%';
 }
 
 function updateTaskCounter() {
   const el = document.getElementById('task-counter');
   if (!el) return;
   const n = countMeaningfulTasks();
-  el.textContent = n+' / '+CAPS.tasks+' tasks';
+  el.textContent = n+' tasks';
   el.classList.toggle('at-cap', n>=CAPS.tasks);
 }
 
@@ -800,10 +799,6 @@ function confirmIntakeItem(idx) {
 
   const cfg = LANES[item.lane];
   const atLaneCap = arr.filter(t=>(t.text||'').trim()).length >= cfg.max;
-  const atGlobalCap = !item.lane.startsWith('b3') && countMeaningfulTasks()>=CAPS.tasks;
-
-  if (atGlobalCap) { toast('Max '+CAPS.tasks+' tasks today — try Block 3'); return; }
-
   // Find empty slot or push
   const emptyIdx = arr.findIndex(t=>!(t.text||'').trim());
   if (emptyIdx>=0 && !atLaneCap) {
@@ -872,14 +867,8 @@ function renderEod() {
 }
 
 // ── Tickets drawer ─────────────────────────────────────────────────────────
-function openTickets() {
-  document.getElementById('drawer-tickets').classList.add('open');
-  document.getElementById('drawer-backdrop').hidden=false;
-}
-function closeTickets() {
-  document.getElementById('drawer-tickets').classList.remove('open');
-  document.getElementById('drawer-backdrop').hidden=true;
-}
+function openTickets() { toast('Add tickets through Brain Dump'); }
+function closeTickets() {}
 
 // ── Day management ─────────────────────────────────────────────────────────
 function archiveDay() {
@@ -899,7 +888,7 @@ function newDay() {
   const t1=(state.eod.tomorrowT1||'').trim(), t2=(state.eod.tomorrowT2||'').trim();
   state.lastDay=todayKey(); state.dateKey=todayKey();
   state.targets=[{id:uid(),text:t1,done:false},{id:uid(),text:t2,done:false}];
-  state.start={targetsLocked:false,noReacting:false,workNotes:state.start.workNotes||''};
+  state.start={targetsLocked:false,workNotes:state.start.workNotes||''};
   state.blocks={block1:{donow:[],quickhits:[]},block2:{donow:[],quickhits:[]},reset:{scan:''},block3:{items:[]}};
   state.followUps=(state.eod.tomorrowFollowUps||[]).map(f=>makeFollowUp(f.snow,f.sent,f.reply)).slice(0,CAPS.followUps);
   state.eod={closedToday:'',stillStuck:[],tomorrowT1:'',tomorrowT2:'',tomorrowFollowUps:[]};
@@ -910,7 +899,7 @@ function newDay() {
 function cleanSession() {
   if (!confirm('Clean session?\n\nClears targets, blocks, follow-ups, and EOD. Keeps notes, tickets, and recent days.')) return;
   state.targets=[{id:uid(),text:'',done:false},{id:uid(),text:'',done:false}];
-  state.start.targetsLocked=false; state.start.noReacting=false;
+  state.start.targetsLocked=false;
   state.blocks={block1:{donow:[],quickhits:[]},block2:{donow:[],quickhits:[]},reset:{scan:''},block3:{items:[]}};
   state.followUps=[];
   state.eod={closedToday:'',stillStuck:[],tomorrowT1:'',tomorrowT2:'',tomorrowFollowUps:[]};
@@ -927,7 +916,6 @@ function addTask(listId) {
   const cfg=LANES[listId]; if (!cfg) return;
   const arr=getTaskArray(listId);
   if (!arr) return;
-  if (!listId.startsWith('b3')&&!canAddTask()) { toast('Max '+CAPS.tasks+' tasks today'); return; }
   arr.push(makeTask(''));
   renderAll(); save();
   setTimeout(()=>{
@@ -1290,9 +1278,7 @@ function bindEvents() {
       const prev=(task.text||'').trim();
       task.text=t.value; fitTaskInput(t); touchTask(task);
       const now=(t.value||'').trim();
-      if (!prev&&now&&!canAddTask()&&!t.dataset.list.startsWith('b3')) {
-        task.text=''; t.value=''; toast('Max '+CAPS.tasks+' tasks today');
-      }
+      // No global cap
       validateFocusId(); updateTaskCounter(); save(); return;
     }
     if (t.dataset.fu) {
@@ -1335,7 +1321,7 @@ function bindEvents() {
       state.tickets[+t.dataset.ticket].status=t.value; save();
     }
     if (t.id==='chk-targets-locked') { state.start.targetsLocked=t.checked; renderAll(); save(); }
-    if (t.id==='chk-no-reacting') { state.start.noReacting=t.checked; save(); }
+
   });
 
   document.addEventListener('click', e => {
